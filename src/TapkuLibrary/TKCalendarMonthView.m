@@ -651,7 +651,7 @@ static UIImage *tileImage;
 	self.timeZone = timeZone;
 	self.sunday = s;
 	
-	[self addSubview:self.dropshadow];
+	//[self addSubview:self.dropshadow];
 	[self addSubview:self.topBackground];
 	[self addSubview:self.leftArrow];
 	[self addSubview:self.rightArrow];
