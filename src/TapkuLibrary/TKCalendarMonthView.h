@@ -93,6 +93,12 @@
  */
 - (void) animateToNextOrPreviousMonth:(BOOL)next;
 
+/** Calculates height of calendar view.
+ * @param   date        Date for the calendar view.
+ * @param   sunday      Indicates if week begins on Sunday.
+ * @return Height of calendar view.
+ */
+-(CGFloat)calendarHeightMonth:(NSDate*)date startDayOnSunday:(BOOL)sunday;
 
 @end
 

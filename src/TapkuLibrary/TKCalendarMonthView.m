@@ -927,6 +927,17 @@ static UIImage *tileImage;
 
 
 #pragma mark Properties & Public Functions
+
+-(CGFloat)calendarHeightMonth:(NSDate*)date startDayOnSunday:(BOOL)sunday
+{
+    NSArray *dates = [TKCalendarMonthTiles rangeOfDatesInMonthGrid:date startOnSunday:sunday timeZone:self.timeZone];
+	NSUInteger numberOfDaysBetween = [dates[0] daysBetweenDate:[dates lastObject]];
+	NSUInteger scale = (numberOfDaysBetween / 7) + 2;
+	CGFloat h = 44.0f * scale;
+    return h;
+}
+
+
 - (UIView *) topBackground{
 	if(_topBackground) return _topBackground;
 	
