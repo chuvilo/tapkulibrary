@@ -30,8 +30,8 @@
  */
 
 
-#import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
+@import UIKit;
+@import QuartzCore;
 
 /** Additional functionality for `UIView`.  */
 @interface UIView (TKCategory)
@@ -43,5 +43,8 @@
 
 /** Rounds of views frame coordinates to the nearest integer. */
 - (void) roundOffFrame;
+
+
+- (UIImage*) snapshotImageAfterScreenUpdates:(BOOL)updates;
 
 @end

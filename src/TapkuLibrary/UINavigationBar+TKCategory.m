@@ -1,10 +1,10 @@
 //
-//  HUDViewController.h
-//  Created by Devin Ross on 7/4/09.
+//  UINavigationBar+TKCategory.m
+//  Created by Devin Ross on 3/4/14.
 //
 /*
  
- tapku || https://github.com/devinross/tapkulibrary
+ tapku || http://github.com/devinross/tapkulibrary
  
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -29,14 +29,25 @@
  
  */
 
+#import "UINavigationBar+TKCategory.h"
 
-#import <TapkuLibrary/TapkuLibrary.h>
+@implementation UINavigationBar (TKCategory)
 
-@interface HUDViewController : UIViewController 
+- (UIView*) hairlineDividerView{
+	return [self _hairlineViewUnder:self];
+}
 
-@property (nonatomic,strong) TKProgressBarView *progressBar;
-@property (nonatomic,strong) TKProgressBarView *progressBarAlternative;
-@property (nonatomic,strong) TKProgressAlertView *alertView;
-@property (nonatomic,strong) TKProgressCircleView *progressCircle;
+- (UIView*) _hairlineViewUnder:(UIView *)view {
+    if (([view isKindOfClass:UIImageView.class] && CGRectGetHeight(view.bounds) == 0.5) || (CGRectGetHeight(view.frame) == 1)) {
+		return view;
+    }
+    for (UIView *subview in view.subviews) {
+        UIView *hairline = [self _hairlineViewUnder:subview];
+        if (hairline) {
+            return hairline;
+        }
+    }
+    return nil;
+}
 
 @end

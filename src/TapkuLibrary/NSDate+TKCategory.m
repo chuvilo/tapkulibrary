@@ -109,6 +109,21 @@
     return ((abs(time) / (60.0 * 60.0 * 24.0)) + 0.5);
 }
 
++ (NSInteger) daysBetweenDate:(NSDate*)fromDateTime andDate:(NSDate*)toDateTime{
+	NSDate *fromDate;
+	NSDate *toDate;
+	
+	NSCalendar *calendar = [NSCalendar currentCalendar];
+	
+	[calendar rangeOfUnit:NSDayCalendarUnit startDate:&fromDate interval:NULL forDate:fromDateTime];
+	[calendar rangeOfUnit:NSDayCalendarUnit startDate:&toDate interval:NULL forDate:toDateTime];
+	
+	NSDateComponents *difference = [calendar components:NSDayCalendarUnit fromDate:fromDate toDate:toDate options:0];
+	
+	return [difference day];
+}
+
+
 #pragma mark Same Day
 - (BOOL) isSameDay:(NSDate*)anotherDate{
 	return [self isSameDay:anotherDate timeZone:[NSTimeZone defaultTimeZone]];
@@ -119,6 +134,33 @@
 	NSDateComponents* components1 = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:self];
 	NSDateComponents* components2 = [calendar components:(NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate:anotherDate];
 	return ([components1 year] == [components2 year] && [components1 month] == [components2 month] && [components1 day] == [components2 day]);
+}
+
+#pragma mark Same Month
+- (BOOL) isSameMonth:(NSDate *)anotherDate{
+	return [self isSameMonth:anotherDate timeZone:[NSTimeZone defaultTimeZone]];
+}
+- (BOOL) isSameMonth:(NSDate *)anotherDate timeZone:(NSTimeZone *)timeZone{
+	
+	NSCalendar* calendar = [NSCalendar currentCalendar];
+	calendar.timeZone = timeZone;
+	NSDateComponents* components1 = [calendar components:NSYearCalendarUnit | NSMonthCalendarUnit fromDate:self];
+	NSDateComponents* components2 = [calendar components:NSYearCalendarUnit | NSMonthCalendarUnit fromDate:anotherDate];
+	return components1.year == components2.year && components1.month == components2.month;
+}
+
+#pragma mark Same Year
+- (BOOL) isSameYear:(NSDate *)anotherDate{
+	return [self isSameYear:anotherDate timeZone:[NSTimeZone defaultTimeZone]];
+}
+- (BOOL) isSameYear:(NSDate *)anotherDate timeZone:(NSTimeZone *)timeZone{
+	
+	NSCalendar* calendar = [NSCalendar currentCalendar];
+	calendar.timeZone = timeZone;
+	NSDateComponents* components1 = [calendar components:NSYearCalendarUnit fromDate:self];
+	NSDateComponents* components2 = [calendar components:NSYearCalendarUnit fromDate:anotherDate];
+	return components1.year == components2.year;
+
 }
 
 #pragma mark Is Today
@@ -217,5 +259,41 @@
 	return [dateFormatter dateFromString:dateTime];
 }
 
+
+
+- (NSDate*) firstDateOfWeekWithTimeZone:(NSTimeZone*)timeZone{
+	NSCalendar *gregorian = [NSCalendar currentCalendar];
+	
+	NSDateComponents *weekdayComponents = [gregorian components:NSWeekdayCalendarUnit fromDate:self];
+	weekdayComponents.timeZone = timeZone;
+
+	NSDateComponents *componentsToSubtract = [[NSDateComponents alloc] init];
+	componentsToSubtract.timeZone = timeZone;
+	
+	[componentsToSubtract setDay: - ([weekdayComponents weekday] - [gregorian firstWeekday])];
+	
+	NSDate *beginningOfWeek = [gregorian dateByAddingComponents:componentsToSubtract toDate:self options:0];
+	
+
+	NSDateComponents *components = [gregorian components: (NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit) fromDate: beginningOfWeek];
+	components.timeZone = timeZone;
+
+	beginningOfWeek = [gregorian dateFromComponents: components];
+	
+	return beginningOfWeek;
+}
+
+
+- (NSDate*) firstDateOfWeek{
+	return [self firstDateOfWeekWithTimeZone:[NSTimeZone defaultTimeZone]];
+}
+
+
++ (NSDate*) firstDateOfWeekWithTimeZone:(NSTimeZone*)timeZone{
+	return [[NSDate date] firstDateOfWeekWithTimeZone:timeZone];
+}
++ (NSDate*) firstDateOfWeek{
+	return [[NSDate date] firstDateOfWeek];
+}
 
 @end

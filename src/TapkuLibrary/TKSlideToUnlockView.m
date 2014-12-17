@@ -34,167 +34,218 @@
 #import "UIImage+TKCategory.h"
 #import "TKGlobal.h"
 #import "UIGestureRecognizer+TKCategory.h"
+#import "TKShimmerLabel.h"
 
-@interface TKSlideToUnlockView (){
-	CGFloat _initialOffset;
-}
-@property (nonatomic,strong) CAGradientLayer *textHighlightLayer;
 
+@interface CustomScrollView : UIScrollView
 
 @end
+
+@implementation CustomScrollView
+
+- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+    [self.nextResponder touchesBegan:touches withEvent:event];
+}
+
+- (void) touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
+    if(!self.dragging){
+        [self.nextResponder touchesMoved:touches withEvent:event];
+    }
+}
+
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
+	[self.nextResponder touchesCancelled:touches withEvent:event];
+}
+
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+    [self.nextResponder touchesEnded:touches withEvent:event];
+}
+
+@end
+
 
 #define TRACK_PADDING 4.0
 #define SLIDER_VIEW_WIDTH 82.0f
 #define FADE_TEXT_OVER_LENGTH 50.0f
 
+@interface TKSlideToUnlockView ()
+@property (nonatomic,strong) UIColor *stashedBackgroundColor;
+@end
+
 @implementation TKSlideToUnlockView
 
 #pragma mark Init & Friends
-- (id) initWithFrame:(CGRect)frame{
-	frame.size.height = 96;
+- (instancetype) init{
+	CGRect frame = CGRectInset(CGRectMake(0, 15, CGRectGetWidth([UIScreen mainScreen].bounds), 62), 15, 0) ;
+	self = [self initWithFrame:frame];
+	return self;
+}
+- (instancetype) initWithFrame:(CGRect)frame{
+	frame.size.height = 62;
 	if(!(self=[super initWithFrame:frame])) return nil;
 	[self _setupView];
     return self;
 }
-- (id) initWithCoder:(NSCoder *)aDecoder{
+- (instancetype) initWithCoder:(NSCoder *)aDecoder{
 	if(!(self=[super initWithCoder:aDecoder])) return nil;
 	[self _setupView];
 	return self;
 }
+
+- (void) layoutSubviews {
+	[self _renderScreen];
+}
 - (void) awakeFromNib{
 	[self _setupView];
 }
+
+
+#pragma mark Private Methods
 - (void) _setupView{
-	CGRect frame = self.frame;
-	self.backgroundColor = [UIColor blackColor];
-	_isUnlocked = NO;
 	
-	self.trackView = [[UIImageView alloc] initWithFrame:CGRectInset(self.bounds, 20, 22)];
-	self.trackView.backgroundColor = [UIColor darkGrayColor];
-	self.trackView.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	self.trackView.layer.cornerRadius = 11;
-	[self addSubview:self.trackView];
+	self.mode = TKSlideToUnlockViewModeNormal;
+	self.backgroundView = [UIImageView imageViewWithFrame:self.bounds];
+	self.backgroundView.layer.cornerRadius = 5;
+	self.backgroundView.clipsToBounds = YES;
+	self.backgroundView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+	[self addSubview:self.backgroundView];
 	
-	UIImage *slider = [UIImage imageNamedTK:@"unlockslider/unlockSlider"];
-	CGRect imgRect = CGRectMakeWithSize(SLIDER_VIEW_WIDTH - slider.size.width, (frame.size.height - slider.size.height)/2.0f, slider.size);
+	self.scrollView = [[CustomScrollView alloc] initWithFrame:self.bounds];
+	self.scrollView.contentSize = CGSizeMake(CGRectGetWidth(self.scrollView.frame)*2, 0);
+	self.scrollView.backgroundColor = [UIColor colorWithRed:76/255. green:217/255. blue:100/255. alpha:0.7];
+	self.scrollView.layer.cornerRadius = 5;
+	self.scrollView.pagingEnabled = YES;
+	self.scrollView.bounces = NO;
+	self.scrollView.showsHorizontalScrollIndicator = NO;
+	self.scrollView.delegate = self;
+	self.scrollView.delaysContentTouches = NO;
+	self.scrollView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
 	
-	UIView *panView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, SLIDER_VIEW_WIDTH, frame.size.height)];
-	panView.autoresizingMask = UIViewAutoresizingFlexibleHeight;
+	[self addSubview:self.scrollView];
 	
-	UIPanGestureRecognizer *pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(_pan:)];
-	[panView addGestureRecognizer:pan];
-	[self addSubview:panView];
-
+	self.scrollView.contentOffset = CGPointMake(CGRectGetWidth(self.scrollView.frame), 0);
 	
-	self.sliderView = [UIImageView imageViewWithFrame:imgRect];
-	self.sliderView.image = slider;
-	self.sliderView.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:self.sliderView.bounds cornerRadius:12].CGPath;
-	self.sliderView.layer.shadowRadius = 3;
-	self.sliderView.layer.shadowOpacity = 0.5;
-	self.sliderView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin;
-	self.sliderView.layer.shadowOffset = CGSizeZero;
-	[panView addSubview:self.sliderView];
+	UIImage *arrow = [UIImage imageNamedTK:@"unlockslider/arrow"];
+	self.arrowView = [[UIImageView alloc] initWithImage:arrow];
+	self.arrowView.center = CGPointMake(CGRectGetWidth(self.scrollView.frame) + 25, CGRectGetHeight(self.scrollView.frame)/2.0f);
+	[self.scrollView addSubview:self.arrowView];
 	
-	CGRect textRect = self.trackView.frame;
-	textRect.size.width -= SLIDER_VIEW_WIDTH - textRect.origin.x;
-	textRect.origin.x = SLIDER_VIEW_WIDTH;
-	textRect = CGRectInset(textRect, 10, 2);
 	
-	self.textLabel = [[UILabel alloc] initWithFrame:textRect];
-	self.textLabel.backgroundColor = [UIColor clearColor];
-	self.textLabel.font = [UIFont systemFontOfSize:24];
+	CGRect textFrame = self.scrollView.bounds;
+	textFrame.origin.x = CGRectGetWidth(self.scrollView.frame);
+	textFrame = CGRectInset(textFrame, 40, 10);
+	
+	
+	self.textLabel = [[TKShimmerLabel alloc] initWithFrame:textFrame];
+	self.textLabel.text = NSLocalizedString(@"slide to unlock", @"Slide to Unlock");
 	self.textLabel.textColor = [UIColor whiteColor];
-	self.textLabel.textAlignment = NSTextAlignmentCenter;
-	self.textLabel.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	self.textLabel.text = NSLocalizedString(@"slide to unlock",@"");
-	[self insertSubview:self.textLabel belowSubview:self.sliderView];
+	self.textLabel.font = [UIFont systemFontOfSize:25];
+	self.textLabel.userInteractionEnabled = NO;
+	self.textLabel.autoresizingMask = UIViewAutoresizingFlexibleHeight;
 	
+	[self.scrollView addSubview:self.textLabel];
 	
-	id dark = (id)[UIColor colorWithWhite:1 alpha:0.35].CGColor;
+}
+- (void) _renderScreen{
+	self.alpha = 0;
+	
+	CGPoint p = [self convertPoint:self.superview.bounds.origin fromView:self.superview];
+	
+	UIGraphicsBeginImageContextWithOptions(self.backgroundView.frame.size, NO, 0);
+	
+	CGContextRef context = UIGraphicsGetCurrentContext();
+	CGContextSaveGState(context);
+	CGContextTranslateCTM(context, p.x, p.y);
+	[self.superview.layer renderInContext:context];
+	
+	UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+	CGContextRestoreGState(context);
+	UIGraphicsEndImageContext();
+	
+	newImage = [newImage imageByApplyingBlurWithRadius:2 tintColor:nil saturationDeltaFactor:1 maskImage:nil];
+	
+	self.backgroundView.image = newImage;
+	self.alpha = 1;
+}
+- (void) _resetShimmer{
+	[self layoutSubviews];
+	id dark = (id)[UIColor colorWithWhite:1 alpha:0.40].CGColor;
 	id light = (id)[UIColor colorWithWhite:1 alpha:1.0f].CGColor;
-	
-	
-	self.textHighlightLayer = [CAGradientLayer layer];
-	self.textHighlightLayer.frame = CGRectInset(self.textLabel.bounds, -400, 0);
-	self.textHighlightLayer.colors = @[dark,dark,light,dark,dark];
-	self.textHighlightLayer.locations = @[@0,@0.46,@0.5,@0.54,@1];
-	self.textHighlightLayer.startPoint = CGPointZero;
-	self.textHighlightLayer.endPoint = CGPointMake(1.0, 0);
-	self.textLabel.layer.mask = self.textHighlightLayer;
-
+	self.textLabel.textHighlightLayer.colors = @[dark,dark,light,dark,dark];
 }
 
-- (void) didMoveToWindow{
-	[self _startLabelAnimation];
-}
-- (void) layoutSubviews{
-	[super layoutSubviews];
-	self.textHighlightLayer.frame = CGRectInset(self.textLabel.bounds, -400, 0);
-	[self _startLabelAnimation];
-}
 
-- (void) _startLabelAnimation{
+#pragma mark UIScrollViewDelegate
+- (void) scrollViewDidEndDecelerating:(UIScrollView *)scrollView{
 	
-	[self.textHighlightLayer removeAllAnimations];
-	CGFloat x = self.textHighlightLayer.frame.size.width/2.0f;
-	CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"position.x"];
-	animation.repeatCount = HUGE_VALF;
-	animation.toValue = @(x);
-	animation.fromValue = @(-x + self.textLabel.frame.size.width);
-	animation.duration = 3.0f;
-	[self.textHighlightLayer addAnimation:animation forKey:@"position.x"];
+	if(scrollView.contentOffset.x == 0){
+		_isUnlocked = YES;
+		[self sendActionsForControlEvents:UIControlEventValueChanged];
+	}
+	[self _resetShimmer];
+	
 }
-- (void) _pan:(UIPanGestureRecognizer*)pan{
+- (void) scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate{
+	if(!decelerate) [self _resetShimmer];
+}
+- (void) scrollViewWillBeginDragging:(UIScrollView *)scrollView{
+	if(self.mode == TKSlideToUnlockViewModeDisabled){
+		scrollView.scrollEnabled = NO;
+		scrollView.userInteractionEnabled = NO;
+		scrollView.scrollEnabled = YES;
+		scrollView.userInteractionEnabled = YES;
+		AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
+		[self sendActionsForControlEvents:UIControlEventTouchCancel];
+	}
+}
+
+
+#pragma mark UIView Touches
+- (void) touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event{
+	id white = (id)[UIColor whiteColor].CGColor;
+	self.textLabel.textHighlightLayer.colors = @[white,white,white,white,white];
 	
-	UIView *panView = pan.view;
+	[self sendActionsForControlEvents:UIControlEventTouchDown];
 	
-	CGPoint p = [pan locationInView:self];
-	CGFloat half = panView.frame.size.width/2.0f;
-	CGFloat maximum = self.trackView.frame.size.width + self.trackView.frame.origin.x - half - TRACK_PADDING;
-
-	if([pan began]){
-		_initialOffset = [pan locationInView:self].x;
-		
-	}else if([pan changed]){
-		
-		CGFloat x = MAX(half,half + p.x - _initialOffset);
-		x = MIN(maximum,x);
-		panView.center = CGPointMake(x, panView.center.y);
-
-		CGFloat diff = FADE_TEXT_OVER_LENGTH - (p.x - _initialOffset);
-		self.textLabel.alpha = diff / FADE_TEXT_OVER_LENGTH;
-
-	}else if([pan cancelled] || [pan ended]){
-		
-		CGFloat x = MAX(half,half + p.x - _initialOffset);
-		x = MIN(maximum,x);
-		
-		if(x == maximum){
-			_isUnlocked = YES;
-			[self sendActionsForControlEvents:UIControlEventValueChanged];
-		}else{
-			[self resetSlider:YES];
-		}
+	if(self.mode == TKSlideToUnlockViewModeDisabled){
+		self.stashedBackgroundColor = self.scrollView.backgroundColor;
+		[UIView beginAnimations:nil context:nil];
+		self.scrollView.backgroundColor = [UIColor colorWithRed:233/255.0f green:52/255.0f blue:41/255.0f alpha:0.7];
+		[UIView commitAnimations];
 	}
 	
 }
-
-- (void) resetSlider:(BOOL)animated{
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event{
+	[self _resetShimmer];
 	
-	UIView *panView = self.sliderView.superview;
-
-	
-	if(animated)
+	if(self.mode == TKSlideToUnlockViewModeDisabled){
 		[UIView beginAnimations:nil context:nil];
-	
-	self.textLabel.alpha = 1.0f;
-	panView.center = CGPointMake(panView.frame.size.width/2.0f, panView.center.y);
-	if(animated)
+		self.scrollView.backgroundColor = self.stashedBackgroundColor;
 		[UIView commitAnimations];
-
-	_isUnlocked = NO;
+		[self resetSlider:YES];
+	}
+	
+	[self sendActionsForControlEvents:UIControlEventTouchUpInside];
+}
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event{
+	[super touchesCancelled:touches withEvent:event];
+	
+	[self _resetShimmer];
+	
+	if(self.mode == TKSlideToUnlockViewModeDisabled){
+		[UIView beginAnimations:nil context:nil];
+		self.scrollView.backgroundColor = self.stashedBackgroundColor;
+		[UIView commitAnimations];
+		[self resetSlider:YES];
+	}
+	[self sendActionsForControlEvents:UIControlEventTouchUpInside];
+	
 }
 
 
+#pragma mark Public Methods
+- (void) resetSlider:(BOOL)animated{
+	[self.scrollView setContentOffset:CGPointMake(CGRectGetWidth(self.scrollView.frame), 0) animated:animated];
+}
 
 @end

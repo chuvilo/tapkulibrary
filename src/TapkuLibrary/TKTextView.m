@@ -35,12 +35,12 @@
 
 
 #pragma mark Init & Friends
-- (id) initWithFrame:(CGRect)frame{
+- (instancetype) initWithFrame:(CGRect)frame{
 	if(!(self=[super initWithFrame:frame])) return nil;
 	[self _setupView];
     return self;
 }
-- (id) initWithCoder:(NSCoder *)aDecoder{
+- (instancetype) initWithCoder:(NSCoder *)aDecoder{
 	if(!(self=[super initWithCoder:aDecoder])) return nil;
 	[self _setupView];
     return self;
@@ -64,14 +64,12 @@
 		if(self.placeHolderLabel.superview==nil){
 			[self addSubview:self.placeHolderLabel];
 			[self sendSubviewToBack:self.placeHolderLabel];
-			
-			
 		}
 		
 		if([self respondsToSelector:@selector(textContainer)])
-			self.placeHolderLabel.frame = CGRectMake(4, 8, self.bounds.size.width - 8, 0);
+			self.placeHolderLabel.frame = CGRectMake(4, self.textContainerInset.top, CGRectGetWidth(self.bounds) - 8, 0);
 		else
-			self.placeHolderLabel.frame = CGRectMake(8,8,self.bounds.size.width - 16,0);
+			self.placeHolderLabel.frame = CGRectMake(8,8,CGRectGetWidth(self.bounds) - 16,0);
 		
 		
 		
@@ -92,6 +90,11 @@
 
 
 #pragma mark Properties
+- (void) setFont:(UIFont *)font{
+	[super setFont:font];
+	self.placeHolderLabel.font = font;
+	[self setNeedsDisplay];
+}
 - (void) setText:(NSString *)text{
     [super setText:text];
     [self _textChanged:nil];
@@ -120,7 +123,7 @@
 - (UILabel*) placeHolderLabel{
 	if(_placeHolderLabel) return _placeHolderLabel;
 	
-	_placeHolderLabel = [[UILabel alloc] initWithFrame:CGRectMake(8,8,self.bounds.size.width - 16,0)];
+	_placeHolderLabel = [[UILabel alloc] initWithFrame:CGRectMake(8,8,CGRectGetWidth(self.bounds) - 16,0)];
 	_placeHolderLabel.lineBreakMode = NSLineBreakByWordWrapping;
 	_placeHolderLabel.numberOfLines = 0;
 	_placeHolderLabel.font = self.font;
@@ -131,7 +134,7 @@
 	if([self respondsToSelector:@selector(textContainer)]){
 		
 		_placeHolderLabel.textColor = [UIColor colorWithWhite:0.80 alpha:1];
-		_placeHolderLabel.frame = CGRectMake(2, 8, self.bounds.size.width - 8, 0);
+		_placeHolderLabel.frame = CGRectMake(2, 8, CGRectGetWidth(self.bounds) - 8, 0);
 		
 	}
 	

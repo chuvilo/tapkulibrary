@@ -6,9 +6,6 @@
  
  tapku || http://github.com/devinross/tapkulibrary
  
- Portions Copyright (c) 2013 Ben Vogelzang.
- https://github.com/bvogelzang/BVReorderTableView
- 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
  files (the "Software"), to deal in the Software without
@@ -32,27 +29,27 @@
  
  */
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 
 /** Additional functionality for `UIGestureRecognizer`.  */
 @interface UIGestureRecognizer (TKCategory)
 
 /** Returns YES if the gesture recognizer state is `UIGestureRecognizerStateBegan`, otherwise NO. */
-- (BOOL) began;
+@property (nonatomic, readonly) BOOL began;
 
 /** Returns YES if the gesture recognizer state is `UIGestureRecognizerStateChanged`, otherwise NO. */
-- (BOOL) changed;
+@property (nonatomic, readonly) BOOL changed;
 
 /** Returns YES if the gesture recognizer state is `UIGestureRecognizerStateEnded`, otherwise NO. */
-- (BOOL) ended;
+@property (nonatomic, readonly) BOOL ended;
 
 /** Returns YES if the gesture recognizer state is `UIGestureRecognizerStateCancelled`, otherwise NO. */
-- (BOOL) cancelled;
+@property (nonatomic, readonly) BOOL cancelled;
 
 /** Returns YES if the gesture recognizer state is `UIGestureRecognizerStateFailed`, otherwise NO. */
-- (BOOL) failed;
+@property (nonatomic, readonly) BOOL failed;
 
 /** Returns YES if the gesture recognizer state is `UIGestureRecognizerStatePossible`, otherwise NO. */
-- (BOOL) possible;
+@property (nonatomic, readonly) BOOL possible;
 
 @end

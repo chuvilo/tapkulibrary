@@ -6,9 +6,6 @@
  
  tapku || http://github.com/devinross/tapkulibrary
  
- Portions Copyright (c) 2013 Ben Vogelzang.
- https://github.com/bvogelzang/BVReorderTableView
- 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
  files (the "Software"), to deal in the Software without
@@ -37,12 +34,9 @@
 @implementation UIViewController (TKCategory)
 
 - (void) presentNavigationControllerWithRoot:(UIViewController *)viewControllerToPresent animated:(BOOL)flag completion:(void (^)(void))completion{
-	
-	
 	UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:viewControllerToPresent];
-	
+	nav.modalPresentationStyle = viewControllerToPresent.modalPresentationStyle;
 	[self presentViewController:nav animated:flag completion:completion];
-	
 }
 
 

@@ -29,7 +29,7 @@
  
  */
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 #import <TapkuLibrary/TapkuLibrary.h>
 
 #pragma mark - MoreCellsViewController
@@ -39,6 +39,6 @@
 @property (nonatomic,strong) TKSwitchCell *switchCell;
 @property (nonatomic,strong) TKTextViewCell *textViewCell;
 @property (nonatomic,strong) TKTextFieldCell *textFieldCell;
-
+@property (nonatomic,strong) TKStepperCell *stepperCell;
 
 @end

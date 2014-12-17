@@ -29,12 +29,19 @@
  
  */
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 
 /** Additional functionality for `UIScrollView`.  */
 @interface UIScrollView (TKCategory)
 
 /** Sets the content offset of the scrollview to zero (0,0). */
 - (void) scrollToTop;
+
+/** Current horizontally scrolled page. */
+@property (nonatomic,readonly) NSInteger currentHorizontalPage;
+
+/** Current vertical scrolled page. */
+@property (nonatomic,readonly) NSInteger currentVerticalPage;
+
 
 @end

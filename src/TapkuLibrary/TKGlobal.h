@@ -29,9 +29,9 @@
  
 */
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
+@import Foundation;
+@import UIKit;
+@import QuartzCore;
 
 
 #define TKLog(s, ...) NSLog( @"[%@ %@] %@",NSStringFromClass([self class]), NSStringFromSelector(_cmd),[NSString stringWithFormat:(s), ##__VA_ARGS__] )
@@ -96,22 +96,66 @@ FOUNDATION_STATIC_INLINE CGRect CGRectCompose(CGPoint origin, CGSize size){
 
 
 
-FOUNDATION_STATIC_INLINE CGPoint CGPointMidpoint(CGPoint p1,CGPoint p2);
-FOUNDATION_STATIC_INLINE CGPoint CGPointMidpoint(CGPoint p1,CGPoint p2){
+FOUNDATION_STATIC_INLINE CGPoint CGPointGetMidpoint(CGPoint p1,CGPoint p2);
+FOUNDATION_STATIC_INLINE CGPoint CGPointGetMidpoint(CGPoint p1,CGPoint p2){
 	return CGPointMake((p1.x+p2.x)/2.0f,(p1.y+p2.y)/2.0f);
 }
 
-FOUNDATION_STATIC_INLINE CGFloat CGPointDistance(CGPoint p1,CGPoint p2);
-FOUNDATION_STATIC_INLINE CGFloat CGPointDistance(CGPoint p1,CGPoint p2){
+FOUNDATION_STATIC_INLINE CGFloat CGPointGetDistance(CGPoint p1,CGPoint p2);
+FOUNDATION_STATIC_INLINE CGFloat CGPointGetDistance(CGPoint p1,CGPoint p2){
 	return sqrt(pow(p2.x-p1.x,2)+pow(p2.y-p1.y,2));
 }
 
 
-FOUNDATION_STATIC_INLINE CGPoint CGRectMidpoint(CGRect rect);
-FOUNDATION_STATIC_INLINE CGPoint CGRectMidpoint(CGRect rect){
+FOUNDATION_STATIC_INLINE CGPoint CGRectGetMidpoint(CGRect rect);
+FOUNDATION_STATIC_INLINE CGPoint CGRectGetMidpoint(CGRect rect){
 	return CGPointMake(rect.origin.x + rect.size.width / 2.0f, rect.origin.y + rect.size.height / 2.0f);
 }
 
+FOUNDATION_STATIC_INLINE CGPoint CGRectGetCenter(CGRect rect);
+FOUNDATION_STATIC_INLINE CGPoint CGRectGetCenter(CGRect rect){
+	return CGPointMake(rect.size.width / 2.0f, rect.size.height / 2.0f);
+}
+
+
+
+
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetWidth(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetWidth(UIView *view){
+	return CGRectGetWidth(view.frame);
+}
+
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetHeight(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetHeight(UIView *view){
+	return CGRectGetHeight(view.frame);
+}
+
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMinX(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMinX(UIView *view){
+	return CGRectGetMinX(view.frame);
+}
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMinY(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMinY(UIView *view){
+	return CGRectGetMinY(view.frame);
+}
+
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMaxX(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMaxX(UIView *view){
+	return CGRectGetMaxX(view.frame);
+}
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMaxY(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMaxY(UIView *view){
+	return CGRectGetMaxY(view.frame);
+}
+
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMidX(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMidX(UIView *view){
+	return CGRectGetMidX(view.frame);
+}
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMidY(UIView *view);
+FOUNDATION_STATIC_INLINE CGFloat CGFrameGetMidY(UIView *view){
+	return CGRectGetMidY(view.frame);
+}
 
 @interface TKGlobal : NSObject 
 

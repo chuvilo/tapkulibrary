@@ -29,7 +29,7 @@
  
  */
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 /** Additional functionality for `NSArray`.  */
 @interface NSArray (TKCategory)
@@ -37,11 +37,11 @@
 /** Returns the object in the array with the lowest index value.
 @return The object in the array with the lowest index value. If the array is empty, returns nil.
 */
-- (id) firstObject;
+@property (nonatomic, readonly, strong) id firstObject;
 
 /** Returns a random object in the array.
  @return The object in the array with the lowest index value. If the array is empty, returns nil.
  */
-- (id) randomObject;
+@property (nonatomic, readonly, strong) id randomObject;
 
 @end

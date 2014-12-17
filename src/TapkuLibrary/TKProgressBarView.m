@@ -36,7 +36,7 @@
 
 @implementation TKProgressBarView
 
-- (id) initWithStyle:(TKProgressBarViewStyle)s{
+- (instancetype) initWithStyle:(TKProgressBarViewStyle)s{
 	CGRect r = s==TKProgressBarViewStyleLong ? CGRectMake(0, 0, 210, 20) : CGRectMake(0, 0, 180, 42);
 	
 	if(!(self=[super initWithFrame:r])) return nil;
@@ -119,7 +119,9 @@
 	CGContextAddArcToPoint(context, maxx, maxy, midx, maxy, radius);
 	CGContextAddArcToPoint(context, minx, maxy, minx, midy, radius);
 	CGContextClosePath(context);
-	CGContextSetRGBStrokeColor(context, 1, 1, 1, 1);
+	CGContextSetStrokeColorWithColor(context, self.tintColor.CGColor);
+
+	
 	CGContextSetLineWidth(context, thickness);
 	CGContextDrawPath(context, kCGPathStroke);
 	
@@ -137,7 +139,7 @@
 	CGContextAddArcToPoint(context, maxx, maxy, midx, maxy, radius);
 	CGContextAddArcToPoint(context, minx, maxy, minx, midy, radius);
 	CGContextClosePath(context);
-	CGContextSetRGBFillColor(context,1, 1, 1, 1);
+	CGContextSetFillColorWithColor(context, self.tintColor.CGColor);
 	CGContextDrawPath(context, kCGPathFill);
 	
 	

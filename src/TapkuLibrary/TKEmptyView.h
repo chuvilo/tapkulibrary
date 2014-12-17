@@ -29,15 +29,15 @@
  
  */
 
-#import <UIKit/UIKit.h>
-#import <QuartzCore/QuartzCore.h>
+@import UIKit;
+@import QuartzCore;
 #import "TKGradientView.h"
 
 
 /**
  The glyph that appears with the empty view.
  */
-typedef enum {
+typedef NS_ENUM(NSInteger, TKEmptyViewImage) {
 	TKEmptyViewImageChatBubble,
 	TKEmptyViewImageClock,
 	TKEmptyViewImageCompass,
@@ -54,7 +54,7 @@ typedef enum {
 	TKEmptyViewImageKey,
 	TKEmptyViewImageMale,
 	TKEmptyViewImageTelevision
-} TKEmptyViewImage;
+} ;
 
 #pragma mark - TKEmptyView
 /** A simple view for showing no content available. */
@@ -73,10 +73,10 @@ typedef enum {
  @param subtitleString The subtitle of the empty view.
  @return An initialized `TKEmptyView` object or nil if the object couldn’t be created.
  */
-- (id) initWithFrame:(CGRect)frame 
+- (instancetype) initWithFrame:(CGRect)frame 
 				mask:(UIImage*)image 
 			   title:(NSString*)titleString 
-			subtitle:(NSString*)subtitleString;
+			subtitle:(NSString*)subtitleString NS_DESIGNATED_INITIALIZER;
 
 /** Initializes an empty view with the given `TKEmptyViewImage`.
  
@@ -88,7 +88,7 @@ typedef enum {
  @param subtitleString The subtitle of the empty view.
  @return An initialized `TKEmptyView` object or nil if the object couldn’t be created.
  */
-- (id) initWithFrame:(CGRect)frame 
+- (instancetype) initWithFrame:(CGRect)frame 
 	  emptyViewImage:(TKEmptyViewImage)image 
 			   title:(NSString*)titleString 
 			subtitle:(NSString*)subtitleString;

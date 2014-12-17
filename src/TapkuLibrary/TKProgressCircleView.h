@@ -29,7 +29,7 @@
  
  */
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 
 /** A progress circle view */
 @interface TKProgressCircleView : UIView {
@@ -38,7 +38,7 @@
 }
 
 /** Initialized a new progress circle view. */
-- (id) init;
+- (instancetype) init;
 
 /** The progress displayed. Value between 0.0 and 1.0 */
 @property (nonatomic,assign) float progress; // between 0.0 & 1.0

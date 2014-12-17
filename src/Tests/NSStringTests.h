@@ -29,10 +29,22 @@
  
  */
 
-#import <SenTestingKit/SenTestingKit.h>
-#import <Foundation/Foundation.h>
+@import XCTest;
+@import Foundation;
 #import "NSString+TKCategory.h"
 
-@interface NSStringTests : SenTestCase
+@interface NSStringTests : XCTestCase
+
+- (void) testShouldValidateEmailAddress;
+
+- (void) testShouldGenerateMD5Sum;
+
+- (void) testShouldEncodeString;
+
+- (void) testShouldHaveString;
+
+- (void) testShouldPassCreditCardValidation;
+
+- (void) testShouldFormatPhoneString;
 
 @end

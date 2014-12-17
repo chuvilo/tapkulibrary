@@ -43,7 +43,10 @@
 
 	self.root = [[RootViewController alloc] initWithStyle:UITableViewStyleGrouped];
 	self.navigationController = [[UINavigationController alloc] initWithRootViewController:self.root];
-
+	self.navigationController.view.backgroundColor = [UIColor whiteColor];
+	self.window.backgroundColor = [UIColor whiteColor];
+	
+	
 	if([[UIDevice currentDevice] userInterfaceIdiom] ==  UIUserInterfaceIdiomPad){
 		
 		self.splitViewController = [[UISplitViewController alloc] init];
@@ -51,10 +54,12 @@
 		self.detail = [[DetailViewController alloc] init];
 		self.splitViewController.delegate = self.detail;
 		self.root.detailViewController = self.detail;
+		
+		UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:self.detail];
 
 
 		
-		self.splitViewController.viewControllers = @[self.navigationController,self.detail];
+		self.splitViewController.viewControllers = @[self.navigationController,nav];
 		self.window.rootViewController = self.splitViewController;
 	}else{
 		self.window.rootViewController = self.navigationController;
@@ -71,6 +76,8 @@
 	
 }
 
-
++ (AppDelegate*) instance{
+	return (AppDelegate*)[[UIApplication sharedApplication] delegate];
+}
 
 @end

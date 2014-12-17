@@ -29,7 +29,7 @@
  
  */
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 /** Additional functionality for `NSObject`.  */
 @interface NSObject (TKCategory)
@@ -60,7 +60,7 @@
 + (id) createObject:(NSDictionary*)dictionary;
 
 
-- (id) initWithDataDictionary:(NSDictionary*)dictionary;
+- (instancetype) initWithDataDictionary:(NSDictionary*)dictionary;
 
 
 /** Imports data from an `NSDictionary` objects using the map provided by the dataKeys dictionary.
@@ -70,9 +70,26 @@
 - (void) importDataWithDictionary:(NSDictionary*)dictionary;
 
 
-- (NSDictionary*) dataDictionary;
+@property (nonatomic, readonly, copy) NSDictionary *dataDictionary;
 
+#if NS_BLOCKS_AVAILABLE
 
+typedef void (^TKJSONCompletionBlock)(id object,NSError *error);
+
+/** Process JSON data in the background with a completion block.
+ @param data The JSON data.
+ @param block The block that will be performed upon the parsing of the json data. The process data will be included as an object with the selector.
+ */
+- (void) processJSON:(NSData*)data withCompletion:(TKJSONCompletionBlock)block;
+
+/** Process JSON data in the background with a completion block.
+ @param data The JSON data.
+ @param options An json parsing options to be included will parsing the JSON data.
+ @param block The block that will be performed upon the parsing of the json data. The process data will be included as an object with the selector.
+ */
+- (void) processJSON:(NSData*)data options:(NSJSONReadingOptions)options withCompletion:(TKJSONCompletionBlock)block;
+
+#endif
 
 /** Process JSON data in the background with a callback selector.
  @param data The JSON data.

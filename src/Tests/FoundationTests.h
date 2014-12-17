@@ -29,17 +29,13 @@
  
 */
 
-
-
-#import <SenTestingKit/SenTestingKit.h>
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-
+@import Foundation;
+@import UIKit;
+@import XCTest;
 #import "NSDate+TKCategory.h"
 
+@interface FoundationTests : XCTestCase 
 
-@interface FoundationTests : SenTestCase 
-
-- (void) testDateCategory;
+- (void) testShouldCreateExpectedDate;
 
 @end

@@ -30,7 +30,7 @@
  */
 
 
-#import <UIKit/UIKit.h>
+@import UIKit;
 #import "TKViewController.h"
 @class TKEmptyView;
 
@@ -50,7 +50,7 @@
  @param style A constant that specifies the style of table view that the controller object is to manage (`UITableViewStylePlain` or `UITableViewStyleGrouped`).
  @return An initialized `TKTableViewController` object or nil if the object couldn’t be created.
  */
-- (id) initWithStyle:(UITableViewStyle)style;
+- (instancetype) initWithStyle:(UITableViewStyle)style NS_DESIGNATED_INITIALIZER;
 
 
 
@@ -60,6 +60,9 @@
 
 /** Returns the table view managed by the controller object. */
 @property (nonatomic,strong) UITableView *tableView;
+
+/** Returns the table view style. */
+@property (nonatomic,readonly) UITableViewStyle style;
 
 /** Returns the empty view. Good for displaying when the content of the table view is empty. */
 @property (nonatomic,strong) TKEmptyView *emptyView;

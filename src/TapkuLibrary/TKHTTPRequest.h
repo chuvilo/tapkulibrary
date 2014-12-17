@@ -29,10 +29,13 @@
  
  */
 
-#import <Foundation/Foundation.h>
+@import Foundation;
+#import "NSObject+TKCategory.h"
 
 #if NS_BLOCKS_AVAILABLE
 typedef void (^TKBasicBlock)(void);
+typedef void (^TKResponseBlock)(NSData *data, NSInteger statusCode, NSError *error);
+typedef void (^TKJSONResponseBlock)(id object, NSInteger statusCode, NSError *error);
 #endif
 
 
@@ -75,25 +78,39 @@ typedef enum _TKNetworkErrorType {
  @param URL The URL for the new request.
  @return The newly created request object.
  */
-+ (TKHTTPRequest*) requestWithURL:(NSURL*)URL;
++ (instancetype) requestWithURL:(NSURL*)URL;
+
+/** Returns a newly created request with a URL and response handler. Immediately starts async request.
+ @param URL The URL for the new request.
+ @param responseHandler The response handler for the request.
+ @return The newly created request object.
+ */
++ (instancetype) requestWithURL:(NSURL *)URL responseHandler:(TKResponseBlock)responseHandler;
+
+/** Returns a newly created request with a URL.
+ @param URL The URL for the new request.
+ @param responseHandler The JSON response handler for the request.
+ @return The newly created request object.
+ */
++ (instancetype) requestWithURL:(NSURL *)URL JSONResponseHandler:(TKJSONResponseBlock)responseHandler;
 
 /** Returns a newly initialized request with a URL. 
  @param URL The URL for the new request.
  @return The newly created request object.
  */
-- (id) initWithURL:(NSURL*)URL;
+- (instancetype) initWithURL:(NSURL*)URL NS_DESIGNATED_INITIALIZER;
 
 /** Returns a newly created request with a `NSURLRequest` object. 
  @param request The `NSURLRequest` for the new request.
  @return The newly created request object.
  */
-+ (TKHTTPRequest*) requestWithURLRequest:(NSURLRequest*)request;
++ (instancetype) requestWithURLRequest:(NSURLRequest*)request;
 
 /** Returns a newly initialized request with a `NSURLRequest` object. 
  @param request The `NSURLRequest` for the new request.
  @return The newly created request object.
  */
-- (id) initWithURLRequest:(NSURLRequest*)request;
+- (instancetype) initWithURLRequest:(NSURLRequest*)request NS_DESIGNATED_INITIALIZER;
 
 ///-------------------------
 /// @name Properties
@@ -162,20 +179,25 @@ typedef enum _TKNetworkErrorType {
 /// @name Callback Blocks
 ///-------------------------
 #if NS_BLOCKS_AVAILABLE
-/** The block called upon the start of the request.
- @param aStartedBlock The block that will be executed upon the start of the request.
-*/
-- (void) setStartedBlock:(TKBasicBlock)aStartedBlock;
 
-/** The block called up the finishing of the request. 
- @param aCompletionBlock The block that will be executed upon completion of the request.
- */
-- (void) setCompletionBlock:(TKBasicBlock)aCompletionBlock;
+/** The block called upon the start of the request. */
+@property (nonatomic,copy) TKBasicBlock startedBlock;
 
-/** The block called up the failure of the request. 
- @param aFailedBlock The block that will be executed upon failure of the request.
- */
-- (void) setFailedBlock:(TKBasicBlock)aFailedBlock;
+/** The block called up the finishing of the request. */
+@property (nonatomic,copy) TKBasicBlock finishedBlock;
+
+/** The block called up the finishing of the request and processing of the JSON response data. */
+@property (nonatomic,copy) TKJSONCompletionBlock JSONFinishedBlock;
+
+/** The block called up the failure of the request. */
+@property (nonatomic,copy) TKBasicBlock failedBlock;
+
+
+/** The block called up the completion or failure of the request. */
+@property (nonatomic,copy) TKResponseBlock responseBlock;
+
+/** The block called up the completion or failure of the request. */
+@property (nonatomic,copy) TKJSONResponseBlock JSONResponseBlock;
 #endif
 
 

@@ -34,7 +34,7 @@
 #import "DetailViewController.h"
 
 #import "LabelViewController.h"
-#import "HUDViewController.h"
+#import "IndicatorsViewController.h"
 #import "EmptyViewController.h"
 #import "CalendarMonthViewController.h"
 #import "CoverflowViewController.h"
@@ -44,7 +44,9 @@
 #import "NetworkRequestProgressViewController.h"
 #import "CalendarDayViewController.h"
 #import "SlideToUnlockViewController.h"
-
+#import "ButtonViewController.h"
+#import "CustomKeyboardsViewController.h"
+#import "ControlsViewController.h"
 
 @interface UINavigationController (Rotation_IOS6)
 @end
@@ -65,10 +67,10 @@
 
 @implementation RootViewController
 
-- (id) initWithStyle:(UITableViewStyle)s{
+- (instancetype) initWithStyle:(UITableViewStyle)s{
 	if(!(self = [super initWithStyle:s])) return nil;
 	self.title = @"Tapku Library";
-	self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Back"] style:UIBarButtonItemStylePlain target:nil action:nil];
+	self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"" style:UIBarButtonItemStylePlain target:nil action:nil];
 	return self;
 }
 - (NSUInteger) supportedInterfaceOrientations{
@@ -78,16 +80,32 @@
 	return [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad ? YES : UIInterfaceOrientationIsPortrait(interfaceOrientation) ;
 }
 
+#define COVERFLOW NSLocalizedString(@"Coverflow", @"")
+#define MONTH_GRID NSLocalizedString(@"Month Grid Calendar", @"")
+#define DAY_VIEW NSLocalizedString(@"Day View Calendar", @"")
+#define EMPTY_SIGN NSLocalizedString(@"Empty Sign", @"")
+#define HUD NSLocalizedString(@"Loading HUD",@"")
+#define ALERTS NSLocalizedString(@"Alerts",@"")
+#define SLIDE NSLocalizedString(@"Slide to Unlock",@"")
+#define BUTTONS NSLocalizedString(@"Buttons",@"")
+#define LABEL_CELLS NSLocalizedString(@"Label Cells",@"")
+#define MORE_CELLS NSLocalizedString(@"More Cells",@"")
+#define IMAGE_CACHE NSLocalizedString(@"Image Cache",@"")
+#define HTTP_PROGRESS NSLocalizedString(@"HTTP Request Progress",@"")
+#define WEB_VC NSLocalizedString(@"Web View Controller",@"")
+#define CUSTOM_KEYBOARDS NSLocalizedString(@"Custom Keyboards",@"")
+#define MULTI_SWITCH NSLocalizedString(@"Multiswitch",@"")
+#define CARD_MODAL NSLocalizedString(@"Card Modal View Controller",@"")
 
 #pragma mark View Lifecycle
 - (void) viewDidLoad{
 	[super viewDidLoad];
 
 	self.data = @[
-  @{@"rows" : @[@"Coverflow",@"Month Grid Calendar",@"Day Calendar"], @"title" : @"Views"},
-  @{@"rows" : @[@"Empty Sign",@"Loading HUD",@"Alerts",@"Slide to Unlock"], @"title" : @"UI Elements"},
-  @{@"rows" : @[@"Label Cells",@"More Cells"], @"title" : @"Table View Cells"},
-  @{@"rows" : @[@"Image Cache",@"HTTP Request Progress"], @"title" : @"Network"}];
+  @{@"rows" : @[CARD_MODAL,WEB_VC,DAY_VIEW,MONTH_GRID,COVERFLOW], @"title" : @"Views"},
+  @{@"rows" : @[SLIDE,BUTTONS,MULTI_SWITCH,CUSTOM_KEYBOARDS,HUD,EMPTY_SIGN,ALERTS], @"title" : @"UI Elements"},
+  @{@"rows" : @[LABEL_CELLS,MORE_CELLS], @"title" : @"Table View Cells"},
+  @{@"rows" : @[IMAGE_CACHE,HTTP_PROGRESS], @"title" : @"Network"}];
 }
 
 
@@ -114,47 +132,66 @@
 - (void) tableView:(UITableView *)tv didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	[tv deselectRowAtIndexPath:indexPath animated:YES];
 	
+	UITableViewCell *cell = [tv cellForRowAtIndexPath:indexPath];
 	UIViewController *vc;
-	NSInteger s = indexPath.section, r = indexPath.row;
+	NSString *str = cell.textLabel.text;
 	
-	if(s==0 && r == 0){
+	
+	if([str isEqualToString:CARD_MODAL]){
+		TKCardModalViewController *modal = [[TKCardModalViewController alloc] init];
+		[self presentViewController:modal animated:YES completion:nil];
+		return;
+	}
+	
+	
+	if([str isEqualToString:COVERFLOW]){
 		vc = [[CoverflowViewController alloc] init];
 		
 		if(self.detailViewController)
 			[self.detailViewController setupWithMainController:vc];
 		else{
 			[vc setModalTransitionStyle:UIModalTransitionStyleCrossDissolve];
-			[self presentModalViewController:vc animated:YES];
+			[self presentViewController:vc animated:YES completion:nil];
 		}
 
 		return;
-	}else if(s==0 && r==1)
+	}else if([str isEqualToString:MONTH_GRID])
 		vc = [[CalendarMonthViewController alloc] initWithSunday:YES];
 	
-	else if(s==0 && r==2)
-		vc = [[CalendarDayViewController alloc] init];
+	else if([str isEqualToString:DAY_VIEW])
+		vc = CalendarDayViewController.new;
 	
-	else if(s==1 && r==0)
-		vc = [[EmptyViewController alloc] init];
-	else if(s==1 && r==1)
-		vc = [[HUDViewController alloc] init];
-	else if(s==1 && r==2)
-		vc = [[AlertsViewController alloc] init];
-	else if(s==1 && r==3)
-		vc = [[SlideToUnlockViewController alloc] init];
+	else if([str isEqualToString:MULTI_SWITCH])
+		vc = ControlsViewController.new;
 	
-	else if(s==2 && r==0)
-		vc = [[LabelViewController alloc] init];
-	else if(s==2 && r==1)
-		vc = [[MoreCellsViewController alloc] init];
+	else if([str isEqualToString:EMPTY_SIGN])
+		vc = EmptyViewController.new;
+	else if([str isEqualToString:HUD])
+		vc = IndicatorsViewController.new;
+	else if([str isEqualToString:ALERTS])
+		vc = AlertsViewController.new;
+	else if([str isEqualToString:SLIDE])
+		vc = SlideToUnlockViewController.new;
+	else if([str isEqualToString:BUTTONS])
+		vc = ButtonViewController.new;
 	
-	else if(s==3 && r==0)
-		vc = [[ImageCenterViewController alloc] init];
-	else
-		vc = [[NetworkRequestProgressViewController alloc] init];
+	else if([str isEqualToString:CUSTOM_KEYBOARDS])
+		vc = CustomKeyboardsViewController.new;
+	
+	else if([str isEqualToString:LABEL_CELLS])
+		vc = LabelViewController.new;
+	else if([str isEqualToString:MORE_CELLS])
+		vc = MoreCellsViewController.new;
+	
+	else if([str isEqualToString:IMAGE_CACHE])
+		vc = ImageCenterViewController.new;
+	else if([str isEqualToString:HTTP_PROGRESS])
+		vc = NetworkRequestProgressViewController.new;
+	else if([str isEqualToString:WEB_VC])
+		vc = [[TKWebViewController alloc] initWithURL:[NSURL URLWithString:@"http://apple.com"]];
 	
 	
-	if(self.detailViewController && !(s==0))
+	if(self.detailViewController && ([str isEqualToString:MONTH_GRID] || [str isEqualToString:DAY_VIEW]))
 		[self.detailViewController setupWithMainController:vc];
 	else
 		[self.navigationController pushViewController:vc animated:YES];

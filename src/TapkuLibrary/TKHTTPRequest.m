@@ -31,6 +31,7 @@
 
 #import "TKHTTPRequest.h"
 #import "TKNetworkQueue.h"
+#import "NSObject+TKCategory.h"
 
 
 typedef enum TKOperationState {
@@ -58,22 +59,12 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 
 #pragma mark - TKHTTPRequest
 @interface TKHTTPRequest () {
-	
 	NSInteger _totalExpectedImageSize,_receivedDataBytes;
-	
-#if NS_BLOCKS_AVAILABLE
-	TKBasicBlock startedBlock;
-	TKBasicBlock completionBlock;
-	TKBasicBlock failureBlock;
-#endif
-	
+	BOOL _cancelled;
 }
 
-@property (nonatomic,strong) TKHTTPRequest *selfRetained;
-
 @property (nonatomic,assign) TKOperationState state;
-@property (nonatomic,readwrite,assign,getter=isCancelled) BOOL cancelled;
-
+@property (nonatomic,assign,getter=isCancelled) BOOL cancelled;
 @property (nonatomic,strong) NSURLConnection *connection;
 @property (nonatomic,strong) NSMutableData *data;
 @property (nonatomic,strong) NSFileHandle *fileHandler; 	// Used for writing data to a file when downloadDestinationPath is set
@@ -106,10 +97,26 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 
 
 #pragma mark Init & Dealloc
-+ (TKHTTPRequest*) requestWithURL:(NSURL*)URL{
++ (instancetype) requestWithURL:(NSURL*)URL{
 	return [[self alloc] initWithURL:URL];
 }
-- (id) initWithURL:(NSURL*)url{
+
++ (instancetype) requestWithURL:(NSURL *)URL responseHandler:(TKResponseBlock)responseHandler{
+	TKHTTPRequest *request = [TKHTTPRequest requestWithURL:URL];
+	request.responseBlock = responseHandler;
+	[request startAsynchronous];
+	return request;
+}
+
++ (instancetype) requestWithURL:(NSURL *)URL JSONResponseHandler:(TKJSONResponseBlock)responseHandler{
+	TKHTTPRequest *request = [TKHTTPRequest requestWithURL:URL];
+	request.JSONResponseBlock = responseHandler;
+	[request startAsynchronous];
+	return request;
+}
+
+
+- (instancetype) initWithURL:(NSURL*)url{
 	if(!(self=[super init])) return nil;
 	
 	
@@ -120,10 +127,10 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 	
 	return self;
 }
-+ (TKHTTPRequest*) requestWithURLRequest:(NSURLRequest*)request{
++ (instancetype) requestWithURLRequest:(NSURLRequest*)request{
 	return [[self alloc] initWithURLRequest:request];
 }
-- (id) initWithURLRequest:(NSURLRequest*)request{
+- (instancetype) initWithURLRequest:(NSURLRequest*)request{
 	if(!(self=[super init])) return nil;
 	
 	self.URLRequest = request;
@@ -177,7 +184,7 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 		[self.delegate performSelector:self.didStartSelector withObject:self];
 	
 #if NS_BLOCKS_AVAILABLE
-	if(startedBlock) startedBlock();
+	if(self.startedBlock) self.startedBlock();
 #endif
 }
 
@@ -236,14 +243,41 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 		[self.delegate performSelector:self.didFinishSelector withObject:self];
 
 #if NS_BLOCKS_AVAILABLE
-	if(completionBlock) completionBlock();
+	if(self.finishedBlock) self.finishedBlock();
+	
+	if(self.responseBlock)
+		self.responseBlock(self.responseData,self.statusCode,self.error);
+	
+	
+	if(self.JSONResponseBlock){
+		[self processJSON:self.responseData withCompletion:^(id object, NSError *error){
+			self.JSONResponseBlock(object,self.statusCode,error);
+		}];
+	}
+	
+	
+	if(self.JSONFinishedBlock){
+		[self processJSON:self.responseData withCompletion:^(id object, NSError *error){
+			self.JSONFinishedBlock(object,error);
+		}];
+	}
+	
 #endif
 	
 }
 - (void) _requestFailed{
 	if(self.delegate && [self.delegate respondsToSelector:self.didFailSelector]) [self.delegate performSelector:self.didFailSelector withObject:self];
 #if NS_BLOCKS_AVAILABLE
-	if(failureBlock) failureBlock();
+	if(self.failedBlock) self.failedBlock();
+	
+	if(self.responseBlock)
+		self.responseBlock(self.responseData,self.statusCode,self.error);
+	
+	if(self.JSONResponseBlock){
+		[self processJSON:self.responseData withCompletion:^(id object, NSError *error){
+			self.JSONResponseBlock(object,self.statusCode,self.error ? self.error : error);
+		}];
+	}
 #endif
 }
 - (void) failWithError:(NSError *)theError{
@@ -349,18 +383,7 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 
 
 
-#pragma mark Blocks
-#if NS_BLOCKS_AVAILABLE
-- (void) setStartedBlock:(TKBasicBlock)aStartedBlock{
-	startedBlock = [aStartedBlock copy];
-}
-- (void) setCompletionBlock:(TKBasicBlock)aCompletionBlock{
-	completionBlock = [aCompletionBlock copy];
-}
-- (void) setFailedBlock:(TKBasicBlock)aFailedBlock{
-	failureBlock = [aFailedBlock copy];
-}
-#endif
+
 
 
 
@@ -428,6 +451,9 @@ static inline NSString * TKKeyPathFromOperationState(TKOperationState state) {
 	
 }
 
+- (BOOL) isCancelled{
+	return _cancelled;
+}
 
 - (void) setCancelled:(BOOL)cancelled {
     [self willChangeValueForKey:@"isCancelled"];

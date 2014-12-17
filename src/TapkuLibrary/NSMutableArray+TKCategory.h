@@ -29,12 +29,15 @@
  
  */
 
-#import <Foundation/Foundation.h>
+@import Foundation;
 
 /** Additional functionality for `NSMutableArray`.  */
 @interface NSMutableArray (TKCategory)
 
 /** Shuffles the order of the objects. */
 - (void) shuffle;
+
+/** Remove first object. */
+- (void) removeFirstObject;
 
 @end

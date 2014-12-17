@@ -31,24 +31,111 @@
 
 
 #import "TKWebViewController.h"
+#import "UIBarButtonItem+TKCategory.h"
+#import "UIDevice+TKCategory.h"
+
+@interface TKWebViewController ()
+@property (nonatomic,strong) UIBarButtonItem *loadingActivityBarButtonItem;
+@end
 
 @implementation TKWebViewController
 
-- (id) initWithURL:(NSURL*)URL{
+- (instancetype) initWithURL:(NSURL*)URL{
 	if(!(self=[super init])) return nil;
 	self.URL = URL;
 	return self;
 }
+- (instancetype) initWithURLRequest:(NSURLRequest*)URLRequest{
+	if(!(self=[super init])) return nil;
+	self.URLRequest = URLRequest;
+	return self;
+}
 
+#pragma mark View Lifecycle
 - (void) loadView{
 	[super loadView];
 	self.webView = [[UIWebView alloc] initWithFrame:self.view.bounds];
+	self.webView.delegate = self;
+	self.webView.scalesPageToFit = YES;
 	self.webView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 	[self.view addSubview:self.webView];
 }
 - (void) viewDidLoad{
 	[super viewDidLoad];
-	[self.webView loadRequest:[NSURLRequest requestWithURL:self.URL]];
+	if(self.URL)
+		[self.webView loadRequest:[NSURLRequest requestWithURL:self.URL]];
+	else if(self.URLRequest)
+		[self.webView loadRequest:self.URLRequest];
+}
+
+#pragma mark Button Actions
+- (void) showActionSheet:(UIBarButtonItem*)sender{
+	NSURL *currentURL = self.webView.request.URL;
+	UIActivityViewController *activityVC = [[UIActivityViewController alloc] initWithActivityItems:@[currentURL] applicationActivities:nil];
+	activityVC.excludedActivityTypes = @[UIActivityTypePostToWeibo, UIActivityTypeSaveToCameraRoll, UIActivityTypeAssignToContact];
+	
+	
+	if([UIDevice padIdiom]){
+		
+		UIPopoverController *popup = [[UIPopoverController alloc] initWithContentViewController:activityVC];
+		[popup presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionAny animated:YES];
+		
+	}else{
+		
+		[self presentViewController:activityVC animated:YES completion:nil];
+
+	}
+	
+}
+
+#pragma mark UIWebviewDelegate
+- (void) webViewDidStartLoad:(UIWebView *)webView{
+	if(self.navigationItem.rightBarButtonItem == _actionBarButtonItem)
+		self.navigationItem.rightBarButtonItem = self.loadingActivityBarButtonItem;
+}
+- (void) webViewDidFinishLoad:(UIWebView *)webView {
+	if(self.navigationItem.rightBarButtonItem == _loadingActivityBarButtonItem)
+		self.navigationItem.rightBarButtonItem = self.actionBarButtonItem;
+	self.title = [self.webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+}
+- (void) webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
+	if(self.navigationItem.rightBarButtonItem == _loadingActivityBarButtonItem)
+		self.navigationItem.rightBarButtonItem = self.actionBarButtonItem;
+	self.title = [self.webView stringByEvaluatingJavaScriptFromString:@"document.title"];
+}
+- (BOOL) webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+	
+	if(self.navigationController && (navigationType == UIWebViewNavigationTypeFormSubmitted || navigationType == UIWebViewNavigationTypeLinkClicked)){
+		TKWebViewController *vc = [[[self class] alloc] initWithURLRequest:request];
+		[self.navigationController pushViewController:vc animated:YES];
+		return NO;
+	}
+	
+	return YES;
+}
+
+
+#pragma mark Properties
+- (UIBarButtonItem*) actionBarButtonItem{
+	if(_actionBarButtonItem) return _actionBarButtonItem;
+	_actionBarButtonItem =  [UIBarButtonItem actionItemWithTarget:self action:@selector(showActionSheet:)];
+	return _actionBarButtonItem;
+}
+- (UIBarButtonItem*) loadingActivityBarButtonItem{
+	if(_loadingActivityBarButtonItem) return _loadingActivityBarButtonItem;
+	
+	UIActivityIndicatorViewStyle style;
+	if(self.navigationController.navigationBar.barTintColor){
+		UIColor *clr = self.navigationController.navigationBar.barTintColor;
+		const CGFloat *componentColors = CGColorGetComponents(clr.CGColor);
+		CGFloat colorBrightness = ((componentColors[0] * 299) + (componentColors[1] * 587) + (componentColors[2] * 114)) / 1000;
+		style = colorBrightness < 0.6 ? UIActivityIndicatorViewStyleWhite : UIActivityIndicatorViewStyleGray ;
+	}else{
+		style = UIActivityIndicatorViewStyleGray;
+	}
+	
+	_loadingActivityBarButtonItem = [UIBarButtonItem activityItemWithIndicatorStyle:style];
+	return _loadingActivityBarButtonItem;
 }
 
 @end

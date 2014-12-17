@@ -30,70 +30,32 @@
  */
 
 #import "DetailViewController.h"
+#import "AppDelegate.h"
 
 #pragma mark - DetailViewController
 @implementation DetailViewController
 
 - (void) viewDidLoad {
     [super viewDidLoad];
-
 	self.view.backgroundColor = [UIColor whiteColor];
-	
-    self.toolbar = [[UIToolbar alloc] initWithFrame:CGRectMakeWithPoint(CGPointZero, self.view.bounds.size.width, 44)];
-	self.toolbar.autoresizingMask = UIViewAutoresizingFlexibleWidth;
-	self.toolbar.items = @[];
-	[self.view addSubview:self.toolbar];
 }
 
 - (void) setupWithMainController:(UIViewController*)controller{
-	[self.mainController.view removeFromSuperview];
+	
+	UINavigationController *nav = [AppDelegate instance].splitViewController.viewControllers.lastObject;
+	nav.viewControllers = @[controller];
 	self.mainController = controller;
-	
-	CGFloat h = self.toolbar.frame.size.height;
-	
-	CGRect r = CGRectMake(0, h, self.view.frame.size.width, self.view.frame.size.height-h);
-	self.mainController.view.frame = r;
-	[self.mainController viewWillAppear:NO];
-	[self.view addSubview:self.mainController.view];
-	[self.mainController viewDidAppear:NO];
-	
+	nav.navigationItem.leftBarButtonItem = self.navigationItem.leftBarButtonItem;
 
-
-	if(self.currentPopoverController!=nil){
-		
-		UIBarButtonItem *item = [self.toolbar items][0];
-		
-		
-		NSMutableArray *items = [NSMutableArray array];
-		[items addObject:item];
-
-		if(self.mainController.toolbarItems!=nil){
-			[items addObjectsFromArray:self.mainController.toolbarItems];
-		}
-		[self.toolbar setItems:items animated:YES];
-
-		
-	}else{
-		[self.toolbar setItems:self.mainController.toolbarItems];
-	}
 	
 }
 - (void) splitViewController: (UISplitViewController*)svc willHideViewController:(UIViewController *)aViewController withBarButtonItem:(UIBarButtonItem*)barButtonItem forPopoverController: (UIPopoverController*)pc {
     
-
-	barButtonItem.title = @"Demos";
-    NSMutableArray *items = [[self.toolbar items] mutableCopy];
-    [items insertObject:barButtonItem atIndex:0];
-    [self.toolbar setItems:items animated:YES];
+	self.navigationItem.leftBarButtonItem = barButtonItem;
     self.currentPopoverController = pc;
 }
 - (void) splitViewController: (UISplitViewController*)svc willShowViewController:(UIViewController *)aViewController invalidatingBarButtonItem:(UIBarButtonItem *)barButtonItem {
-	
-	NSMutableArray *items = [[self.toolbar items] mutableCopy];
-    [items removeObjectAtIndex:0];
-    [self.toolbar setItems:items animated:YES];
-    self.currentPopoverController = nil;
-
+	self.navigationItem.leftBarButtonItem = nil;
 }
 
 #pragma mark TableView Delegate & Data Source

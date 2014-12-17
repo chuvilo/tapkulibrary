@@ -1,10 +1,10 @@
 //
-//  DataTests.h
-//  Created by Devin Ross on 12/29/12.
+//  UILabel+TKCategory.h
+//  Created by Devin Ross on 10/7/14.
 //
 /*
  
- tapku || https://github.com/devinross/tapkulibrary
+ tapku || http://github.com/devinross/tapkulibrary
  
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -29,10 +29,11 @@
  
  */
 
-#import <SenTestingKit/SenTestingKit.h>
-#import <Foundation/Foundation.h>
-#import "NSObject+TKCategory.h"
+@import UIKit;
 
-@interface DataTests : SenTestCase
+@interface UILabel (TKCategory)
+
+- (void) sizeToFitWithAlignment;
+- (void) sizeToFitWithAlignmentAndVerticalCentering;
 
 @end
