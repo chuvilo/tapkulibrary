@@ -29,8 +29,6 @@
  
  */
 
-@import Foundation;
-@import UIKit;
 
 
 @protocol TKCalendarMonthViewDelegate, TKCalendarMonthViewDataSource;
